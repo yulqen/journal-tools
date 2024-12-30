@@ -34,7 +34,10 @@ CREATE TABLE journal_entries (
 **meetings Table:**
 ```sql
 CREATE TABLE meetings (
-    id TEXT PRIMARY KEY
+    id TEXT PRIMARY KEY,
+    date TEXT,
+    name TEXT,
+    subject TEXT
 );
 ```
 
