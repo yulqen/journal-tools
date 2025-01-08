@@ -109,6 +109,20 @@ class JournalEntry:
                 (entry_id, entry_text, current_time, current_time, meeting_id),
             )
 
+    def add_exercise_entry(self, entry_text: str, entry_type: int) -> str:
+        entry_id = str(uuid.uuid4())
+        current_time = datetime.now().isoformat()
+
+        breakpoint()
+        with DatabaseManager(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO exercise_entries (id, entry, type, date_added) VALUES (?, ?, ?, ?)",
+                (entry_id, entry_text, entry_type, current_time),
+            )
+
+        return entry_id
+
 
 class CommandLineInterface:
     def __init__(self):
@@ -139,6 +153,13 @@ class CommandLineInterface:
         )
         type_group.add_argument(
             "--sleep", action="store_true", help="Sleep entry (type 4)"
+        )
+        type_group.add_argument(
+            "--exercise", action="store_true", help="Exercise entry"
+        )
+
+        entry_parser.add_argument(
+            "--exercise-type", type=int, help="Type of exercise - consult exercise_types table for integers"
         )
 
         entry_parser.add_argument(
@@ -185,6 +206,8 @@ class CommandLineInterface:
             return 3
         elif args.sleep:
             return 4
+        elif args.exercise:
+            return 5
         return 2  # Default to personal
 
     def _validate_sleep_metadata(self, args) -> Optional[SleepMetadata]:
@@ -207,6 +230,16 @@ class CommandLineInterface:
                 alcohol=args.alcohol,
                 tech_excited=args.tech_excited,
             )
+        return None
+
+    def _validate_exercise_metadata(self, args) -> Optional[Dict[str, Any]]:
+        if args.exercise:
+            if not args.exercise_type:
+                raise ValueError("Exercise entries require --exercise-type")
+
+            return {
+                "exercise_type": args.exercise_type
+            }
         return None
 
     def run(self):
@@ -234,9 +267,14 @@ class CommandLineInterface:
 
         entry_type = self._get_entry_type(args)
         sleep_metadata = self._validate_sleep_metadata(args)
+        exercise_metadata = self._validate_exercise_metadata(args)
 
-        entry_id = self.journal.add_entry(entry_text, entry_type, sleep_metadata)
-        print(f"Entry successfully added with type {entry_type} and ID {entry_id}")
+        if args.command != "add":
+            entry_id = self.journal.add_entry(entry_text, entry_type, sleep_metadata)
+        elif args.command == "add" and entry_type == 5:
+            exercise_entry_type = exercise_metadata["exercise_type"]
+            entry_id = self.journal.add_exercise_entry(entry_text, exercise_entry_type)
+        print(f"Entry successfully added with type {entry_type} and ID {exercise_entry_type}")
 
     def _handle_meeting_command(self, args):
         entry_text = " ".join(args.entry)
@@ -258,3 +296,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
