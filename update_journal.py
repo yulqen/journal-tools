@@ -159,7 +159,9 @@ class CommandLineInterface:
         )
 
         entry_parser.add_argument(
-            "--exercise-type", type=int, help="Type of exercise - consult exercise_types table for integers"
+            "--exercise-type",
+            type=int,
+            help="Type of exercise - consult exercise_types table for integers",
         )
 
         entry_parser.add_argument(
@@ -195,9 +197,7 @@ class CommandLineInterface:
         delete_parser = subparsers.add_parser(
             "delete", help="Delete a journal entry with ID"
         )
-        delete_parser.add_argument(
-            "entry_id", help="Journal ID to delete"
-        )
+        delete_parser.add_argument("entry_id", help="Journal ID to delete")
 
     def _get_entry_type(self, args) -> int:
         if args.work:
@@ -237,9 +237,7 @@ class CommandLineInterface:
             if not args.exercise_type:
                 raise ValueError("Exercise entries require --exercise-type")
 
-            return {
-                "exercise_type": args.exercise_type
-            }
+            return {"exercise_type": args.exercise_type}
         return None
 
     def run(self):
@@ -269,12 +267,15 @@ class CommandLineInterface:
         sleep_metadata = self._validate_sleep_metadata(args)
         exercise_metadata = self._validate_exercise_metadata(args)
 
-        if args.command != "add":
-            entry_id = self.journal.add_entry(entry_text, entry_type, sleep_metadata)
-        elif args.command == "add" and entry_type == 5:
+        if args.command == "add" and entry_type == 5:
             exercise_entry_type = exercise_metadata["exercise_type"]
             entry_id = self.journal.add_exercise_entry(entry_text, exercise_entry_type)
-        print(f"Entry successfully added with type {entry_type} and ID {exercise_entry_type}")
+            print(
+                f"Entry successfully added with type {exercise_entry_type} and ID {entry_id}"
+            )
+        else:
+            entry_id = self.journal.add_entry(entry_text, entry_type, sleep_metadata)
+            print(f"Entry successfully added with type {entry_type} and ID {entry_id}")
 
     def _handle_meeting_command(self, args):
         entry_text = " ".join(args.entry)
@@ -296,4 +297,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
