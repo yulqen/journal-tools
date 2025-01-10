@@ -113,7 +113,6 @@ class JournalEntry:
         entry_id = str(uuid.uuid4())
         current_time = datetime.now().isoformat()
 
-        breakpoint()
         with DatabaseManager(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
